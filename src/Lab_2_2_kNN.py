@@ -18,12 +18,8 @@ def minkowski_distance(a, b, p=2):
     Returns:
         float: Minkowski distance between arrays a and b.
     """
-    
-    suma = 0
-    for i in range(len(a)):
-        suma += abs(a[i] - b[i])**p
-    suma = suma ** (1/p)
-    return suma
+
+    return np.sum(np.abs(a - b) ** p) ** (1 / p)
 
 
 # k-Nearest Neighbors Model
@@ -100,21 +96,13 @@ class knn:
             np.ndarray: Predicted class probabilities.
         """
 
-        lista = []
-        for x in X:
-            distances = self.compute_distances(x)
-            k_nearest = self.get_k_nearest_neighbors(distances)
-            knn_labels = []
-            for i in k_nearest:
-                knn_labels.append(self.y_train[i])
-            counts = []
-            for i in knn_labels:
-                counts.append(knn_labels.count(i)/self.k)
-                for j in knn_labels:
-                    if j == i:
-                        knn_labels.remove(i)
-            lista.append(counts)
-        return np.array(lista)
+        distancias = [knn.compute_distances(self, punto) for punto in X]
+        vecinos = [knn.get_k_nearest_neighbors(self, dist) for dist in distancias]
+        labels = self.y_train[vecinos]
+        max_len = len(np.unique(self.y_train))
+        return np.array([np.bincount(label, minlength=max_len) / len(label) for label in labels])
+                        
+        
 
     def compute_distances(self, point: np.ndarray) -> np.ndarray:
         """Compute distance from a point to every point in the training dataset
